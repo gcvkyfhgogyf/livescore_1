@@ -20,14 +20,22 @@ jobs:
 
       - name: Unpack project and build APK
         run: |
-          if [ ! -f FloatingLiveScore.zip ]; then
-            echo "ERROR: FloatingLiveScore.zip not found in the repository"
+          ZIP=$(ls *.zip 2>/dev/null | head -n1)
+          if [ -z "$ZIP" ]; then
+            echo "ERROR: no .zip file found in the repository"
             ls -la
             exit 1
           fi
+          echo "Using: $ZIP"
           mkdir -p /tmp/proj
-          unzip -q FloatingLiveScore.zip -d /tmp/proj
-          cd /tmp/proj/FloatingLiveScore
+          unzip -q "$ZIP" -d /tmp/proj
+          S=$(find /tmp/proj -name settings.gradle.kts | head -n1)
+          if [ -z "$S" ]; then
+            echo "ERROR: settings.gradle.kts not found inside the zip"
+            find /tmp/proj | head -50
+            exit 1
+          fi
+          cd "$(dirname "$S")"
           ls -la
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
