@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.FloatingLiveScore" parent="android:Theme.DeviceDefault.NoActionBar" />
+</resources>
