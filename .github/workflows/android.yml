@@ -18,25 +18,27 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build debug APK
+      - name: Unpack project and build APK
         run: |
-          S=$(find . -name settings.gradle.kts | head -n1)
-          if [ -z "$S" ]; then
-            echo "ERROR: settings.gradle.kts not found"
+          if [ ! -f FloatingLiveScore.zip ]; then
+            echo "ERROR: FloatingLiveScore.zip not found in the repository"
+            ls -la
             exit 1
           fi
-          cd "$(dirname "$S")"
+          mkdir -p /tmp/proj
+          unzip -q FloatingLiveScore.zip -d /tmp/proj
+          cd /tmp/proj/FloatingLiveScore
+          ls -la
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-
-      - name: Show the APK that was built
-        run: find . -name "*.apk" -print
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/LiveScoreFloat.apk"
 
       - name: Upload APK (Artifacts)
         uses: actions/upload-artifact@v4
         with:
           name: LiveScoreFloat-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: out/LiveScoreFloat.apk
           if-no-files-found: error
 
       - name: Publish APK as a Release
@@ -44,4 +46,4 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           name: Live Score Float build ${{ github.run_number }}
-          files: "**/build/outputs/apk/debug/*.apk"
+          files: out/LiveScoreFloat.apk
